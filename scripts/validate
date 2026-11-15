@@ -1,0 +1,114 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.9"
+# dependencies = ["jsonschema>=4.18"]
+# ///
+"""Validate every value file in this repo against its JSON Schema.
+
+Run with `scripts/validate` (needs uv) or `python3 scripts/validate` with
+jsonschema installed. Exits non-zero and lists every problem found.
+
+Checks beyond the schemas:
+  - files are strict JSON (no duplicate keys, no NaN/Infinity)
+  - shape names are unique and match their file name
+  - nothing unexpected sits in tokens/ or shapes/
+"""
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+try:
+    from jsonschema import Draft202012Validator
+except ImportError:
+    sys.exit("jsonschema is not installed: run `uv run scripts/validate` or `pip install jsonschema`")
+
+ROOT = Path(__file__).resolve().parent.parent
+TOKEN_FILES = {"colors.tokens.json": "colors.schema.json"}
+
+
+def _no_dupes(pairs):
+    seen = {}
+    for key, value in pairs:
+        if key in seen:
+            raise ValueError(f"duplicate key {key!r}")
+        seen[key] = value
+    return seen
+
+
+def _no_constants(name):
+    raise ValueError(f"non-standard JSON constant {name}")
+
+
+def load_json(path: Path):
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=_no_dupes,
+        parse_constant=_no_constants,
+    )
+
+
+def validator(schema_name: str) -> Draft202012Validator:
+    schema = load_json(ROOT / "schema" / schema_name)
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def check_file(path: Path, v: Draft202012Validator, errors: list[str]):
+    rel = path.relative_to(ROOT)
+    try:
+        data = load_json(path)
+    except ValueError as e:
+        errors.append(f"{rel}: invalid JSON: {e}")
+        return None
+    for err in sorted(v.iter_errors(data), key=lambda e: list(e.absolute_path)):
+        loc = "/".join(str(p) for p in err.absolute_path) or "<root>"
+        errors.append(f"{rel}: {loc}: {err.message}")
+    return data
+
+
+def main() -> int:
+    errors: list[str] = []
+
+    for path in sorted((ROOT / "tokens").iterdir()):
+        schema_name = TOKEN_FILES.get(path.name)
+        if schema_name is None:
+            errors.append(f"tokens/{path.name}: no schema registered (add it to TOKEN_FILES)")
+            continue
+        check_file(path, validator(schema_name), errors)
+    for name in TOKEN_FILES:
+        if not (ROOT / "tokens" / name).is_file():
+            errors.append(f"tokens/{name}: missing")
+
+    shape_v = validator("shape.schema.json")
+    owners: dict[str, Path] = {}
+    shape_count = 0
+    for path in sorted((ROOT / "shapes").iterdir()):
+        rel = path.relative_to(ROOT)
+        if path.suffix != ".json" or not path.is_file():
+            errors.append(f"{rel}: only .json shape files belong in shapes/")
+            continue
+        shape_count += 1
+        data = check_file(path, shape_v, errors)
+        name = data.get("name") if isinstance(data, dict) else None
+        if not isinstance(name, str):
+            continue
+        if name != path.stem:
+            errors.append(f"{rel}: name {name!r} does not match file name {path.stem!r}")
+        if name in owners:
+            errors.append(f"{rel}: duplicate shape name {name!r} (also in {owners[name].relative_to(ROOT)})")
+        else:
+            owners[name] = path
+
+    if errors:
+        print(f"validation failed ({len(errors)} problem(s)):", file=sys.stderr)
+        for e in errors:
+            print(f"  {e}", file=sys.stderr)
+        return 1
+    print(f"ok: {len(TOKEN_FILES)} token file(s), {shape_count} shape(s)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

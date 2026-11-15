@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nltl color tokens",
+  "description": "Subset of the W3C Design Tokens (DTCG) format: nested groups of color tokens. Group and token names must not start with '$' or contain '.', '{' or '}'.",
+  "$ref": "#/$defs/group",
+  "$defs": {
+    "name": { "type": "string", "pattern": "^[^$.{}][^.{}]*$" },
+    "group": {
+      "type": "object",
+      "properties": {
+        "$description": { "type": "string" }
+      },
+      "propertyNames": {
+        "anyOf": [
+          { "$ref": "#/$defs/name" },
+          { "const": "$description" }
+        ]
+      },
+      "additionalProperties": { "$ref": "#/$defs/node" },
+      "minProperties": 1
+    },
+    "node": {
+      "if": { "type": "object", "required": ["$value"] },
+      "then": { "$ref": "#/$defs/colorToken" },
+      "else": { "$ref": "#/$defs/group" }
+    },
+    "colorToken": {
+      "type": "object",
+      "required": ["$value", "$type"],
+      "properties": {
+        "$value": {
+          "type": "string",
+          "description": "Hex color: #rrggbb or #rrggbbaa.",
+          "pattern": "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        },
+        "$type": { "const": "color" },
+        "$description": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

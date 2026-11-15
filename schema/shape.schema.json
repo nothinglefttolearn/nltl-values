@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nltl shape",
+  "description": "A named shape: an ordered list of XY points. Closed shapes need at least 3 points; open shapes at least 2.",
+  "type": "object",
+  "required": ["name", "closed", "points"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique across shapes/ and equal to the file name without .json.",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "closed": { "type": "boolean" },
+    "points": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/$defs/point" }
+    }
+  },
+  "additionalProperties": false,
+  "if": { "properties": { "closed": { "const": true } } },
+  "then": { "properties": { "points": { "minItems": 3 } } },
+  "$defs": {
+    "point": {
+      "type": "array",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }],
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}
