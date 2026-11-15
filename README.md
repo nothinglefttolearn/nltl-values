@@ -10,7 +10,7 @@ This repo is the single source of truth. Change a value here, tag a release, and
 | Path | Contents |
 | --- | --- |
 | `tokens/colors.tokens.json` | Colors in [W3C Design Tokens (DTCG)](https://www.designtokens.org/tr/drafts/format/) format |
-| `shapes/<name>.json` | One shape per file: `{"name": "arrow", "closed": true, "points": [[x, y], ...]}` |
+| `shapes/<name>.json` | One shape per file, e.g. `shapes/face.json` |
 | `schema/` | JSON Schemas for both |
 | `scripts/validate` | Validates everything; CI runs it on every push and PR |
 | `go/` | Go package (data embedded with `go:embed`) |
@@ -28,10 +28,22 @@ Tokens can sit at the top level or nest in groups. A token's path is its group n
 
 ### Shapes
 
-- `name` uses lowercase letters, digits, and hyphens. It must be unique and match the file name (`shapes/arrow.json` → `"arrow"`).
-- `points` are `[x, y]` number pairs, in drawing order.
-- `closed: true` means the last point joins back to the first. A closed shape needs at least 3 points and an open one at least 2.
-- Coordinates have no implied unit or origin. Each consumer decides how to scale them.
+```json
+{
+  "$schema": "../schema/shape.schema.json",
+  "name": "face",
+  "description": "NLTL face. Left-aligned, 3/4 of the square's width, full height.",
+  "points": [[0, 0], [0.75, 0.25], [0.75, 1], [0, 1]]
+}
+```
+
+- `name` (required) uses lowercase letters, digits, and hyphens. It must be unique and match the file name (`shapes/face.json` → `"face"`).
+- `points` (required) are `[x, y]` number pairs, in drawing order.
+- `description` (optional) says what the shape is.
+- `closed` (optional, default `true`): the last point joins back to the first, making a polygon. Set `"closed": false` for an open line. A closed shape needs at least 3 points and an open one at least 2.
+- `$schema` (optional) points editors at the schema for autocomplete and inline errors. The loaders ignore it.
+- Coordinates use screen orientation: the origin `(0, 0)` is the top-left, x increases to the right and **y increases downward**, as in SVG, HTML canvas and most image libraries. If you draw in a y-up system (e.g. matplotlib's default axes), flip y: `y' = height - y`.
+- Coordinates have no unit. Each consumer decides how to scale them.
 
 ## Consuming
 
@@ -47,7 +59,7 @@ go get github.com/nltl/nltl-values@v0.1.0
 import values "github.com/nltl/nltl-values/go"
 
 hex, err := values.Color("primary")   // "#DFA4E3"
-arrow, err := values.Shape("arrow")         // arrow.Points[0].X, .Y
+face, err := values.Shape("face")           // face.Points[0].X, .Y
 all, err := values.Colors()                 // map[path]hex
 names, err := values.ShapeNames()
 ```
@@ -64,7 +76,7 @@ pip install "nltl-values @ git+https://github.com/nltl/nltl-values@v0.1.0"
 import nltl_values
 
 nltl_values.color("primary")   # "#DFA4E3"
-nltl_values.shape("arrow").points    # ((0.0, 3.0), (6.0, 3.0), ...)
+nltl_values.shape("face").points     # ((0.0, 0.0), (0.75, 0.25), ...)
 nltl_values.colors()                 # {path: hex}
 nltl_values.shape_names()
 ```

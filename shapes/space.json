@@ -1,0 +1,6 @@
+{
+  "$schema": "../schema/shape.schema.json",
+  "name": "space",
+  "description": "NLTL space. The unit square minus face.",
+  "points": [[0, 0], [1, 0], [1, 1], [0.75, 1], [0.75, 0.25]]
+}

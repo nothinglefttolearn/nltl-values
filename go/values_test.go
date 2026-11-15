@@ -1,6 +1,8 @@
 package values_test
 
 import (
+	"math"
+	"slices"
 	"testing"
 
 	values "github.com/nltl/nltl-values/go"
@@ -25,33 +27,50 @@ func TestColor(t *testing.T) {
 	}
 }
 
-func TestShape(t *testing.T) {
-	arrow, err := values.Shape("arrow")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if arrow.Name != "arrow" || !arrow.Closed {
-		t.Errorf("got name=%q closed=%v", arrow.Name, arrow.Closed)
-	}
-	if len(arrow.Points) != 7 || arrow.Points[0] != (values.Point{X: 0, Y: 3}) {
-		t.Errorf("unexpected points: %v", arrow.Points)
-	}
-
-	// Results are copies: mutating one must not leak into the next call.
-	arrow.Points[0].X = 99
-	again, _ := values.Shape("arrow")
-	if again.Points[0].X != 0 {
-		t.Error("Shape returned shared backing data")
-	}
-
+func TestShapes(t *testing.T) {
 	names, err := values.ShapeNames()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(names) == 0 || names[0] != "arrow" {
-		t.Errorf("ShapeNames() = %v", names)
+	if !slices.Equal(names, []string{"face", "space"}) {
+		t.Errorf("ShapeNames() = %v, want [face space]", names)
 	}
+
+	face, err := values.Shape("face")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []values.Point{{0, 0}, {0.75, 0.25}, {0.75, 1}, {0, 1}}
+	if !face.Closed || face.Description == "" || !slices.Equal(face.Points, want) {
+		t.Errorf("face = %+v", face)
+	}
+
+	// Results are copies: mutating one must not leak into the next call.
+	face.Points[0].X = 99
+	again, _ := values.Shape("face")
+	if again.Points[0].X != 0 {
+		t.Error("Shape returned shared backing data")
+	}
+
 	if _, err := values.Shape("nope"); err == nil {
 		t.Error("expected error for unknown shape")
 	}
+}
+
+// face and space tile the unit square: their areas sum to 1.
+func TestFaceAndSpaceFillUnitSquare(t *testing.T) {
+	face, _ := values.Shape("face")
+	space, _ := values.Shape("space")
+	if got := area(face.Points) + area(space.Points); math.Abs(got-1) > 1e-9 {
+		t.Errorf("area(face)+area(space) = %v, want 1", got)
+	}
+}
+
+func area(ps []values.Point) float64 {
+	var s float64
+	for i, p := range ps {
+		q := ps[(i+1)%len(ps)]
+		s += p.X*q.Y - q.X*p.Y
+	}
+	return math.Abs(s) / 2
 }

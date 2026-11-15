@@ -1,0 +1,6 @@
+{
+  "$schema": "../schema/shape.schema.json",
+  "name": "face",
+  "description": "NLTL face. Left-aligned, 3/4 of the square's width, full height.",
+  "points": [[0, 0], [0.75, 0.25], [0.75, 1], [0, 1]]
+}

@@ -3,7 +3,7 @@
     import nltl_values
 
     nltl_values.color("primary")   # "#DFA4E3"
-    nltl_values.shape("arrow").points    # ((0.0, 3.0), (6.0, 3.0), ...)
+    nltl_values.shape("face").points     # ((0.0, 0.0), (0.75, 0.25), ...)
 """
 from __future__ import annotations
 
@@ -17,16 +17,18 @@ from typing import Dict, Tuple
 __version__ = "0.1.0"
 __all__ = ["Shape", "color", "colors", "shape", "shape_names"]
 
+# (x, y) in screen orientation: origin top-left, y increases downward.
 Point = Tuple[float, float]
 
 
 @dataclass(frozen=True)
 class Shape:
-    """A named list of points. ``closed`` means the last point joins the first."""
+    """A named list of points. ``closed`` (default true) means the last point joins the first."""
 
     name: str
     closed: bool
     points: Tuple[Point, ...]
+    description: str = ""
 
 
 def _data_dir():
@@ -66,8 +68,9 @@ def _shapes() -> Dict[str, Shape]:
         raw = json.loads(f.read_text("utf-8"))
         out[raw["name"]] = Shape(
             name=raw["name"],
-            closed=raw["closed"],
+            closed=raw.get("closed", True),
             points=tuple((float(x), float(y)) for x, y in raw["points"]),
+            description=raw.get("description", ""),
         )
     return out
 

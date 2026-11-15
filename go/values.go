@@ -3,7 +3,7 @@
 //	import values "github.com/nltl/nltl-values/go"
 //
 //	hex, err := values.Color("primary") // "#DFA4E3"
-//	arrow, err := values.Shape("arrow")
+//	face, err := values.Shape("face")
 //
 // Every accessor returns a fresh copy, so callers may modify results freely.
 package values
@@ -20,7 +20,8 @@ import (
 	nltlvalues "github.com/nltl/nltl-values"
 )
 
-// Point is one XY coordinate of a shape.
+// Point is one XY coordinate of a shape, in screen orientation: the origin
+// is top-left and Y increases downward.
 type Point struct {
 	X, Y float64
 }
@@ -39,11 +40,12 @@ func (p *Point) UnmarshalJSON(b []byte) error {
 }
 
 // ShapeDef is a named list of points. Closed means the last point connects
-// back to the first.
+// back to the first; it is true unless the file says otherwise.
 type ShapeDef struct {
-	Name   string  `json:"name"`
-	Closed bool    `json:"closed"`
-	Points []Point `json:"points"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Closed      bool    `json:"closed"`
+	Points      []Point `json:"points"`
 }
 
 func (s ShapeDef) clone() ShapeDef {
@@ -78,7 +80,7 @@ var load = sync.OnceValues(func() (*data, error) {
 		if err != nil {
 			return nil, err
 		}
-		var s ShapeDef
+		s := ShapeDef{Closed: true} // default when "closed" is absent
 		if err := json.Unmarshal(raw, &s); err != nil {
 			return nil, fmt.Errorf("%s: %w", path.Base(f), err)
 		}

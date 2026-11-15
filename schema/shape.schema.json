@@ -1,16 +1,25 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "nltl shape",
-  "description": "A named shape: an ordered list of XY points. Closed shapes need at least 3 points; open shapes at least 2.",
+  "description": "A named shape: an ordered list of XY points in screen orientation (origin top-left, y increases downward). Closed shapes (the default) need at least 3 points; open shapes at least 2.",
   "type": "object",
-  "required": ["name", "closed", "points"],
+  "required": ["name", "points"],
   "properties": {
+    "$schema": {
+      "description": "Editor hint only; ignored by the loaders.",
+      "const": "../schema/shape.schema.json"
+    },
     "name": {
       "type": "string",
       "description": "Unique across shapes/ and equal to the file name without .json.",
       "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
     },
-    "closed": { "type": "boolean" },
+    "description": { "type": "string" },
+    "closed": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the last point joins back to the first. Defaults to true (a polygon)."
+    },
     "points": {
       "type": "array",
       "minItems": 2,
@@ -18,7 +27,12 @@
     }
   },
   "additionalProperties": false,
-  "if": { "properties": { "closed": { "const": true } } },
+  "if": {
+    "anyOf": [
+      { "not": { "required": ["closed"] } },
+      { "properties": { "closed": { "const": true } } }
+    ]
+  },
   "then": { "properties": { "points": { "minItems": 3 } } },
   "$defs": {
     "point": {
