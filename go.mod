@@ -1,3 +1,3 @@
-module github.com/nltl/nltl-values
+module github.com/nothinglefttolearn/nltl-values
 
 go 1.22

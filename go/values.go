@@ -1,6 +1,6 @@
 // Package values exposes typed, read-only access to the shared nltl values.
 //
-//	import values "github.com/nltl/nltl-values/go"
+//	import values "github.com/nothinglefttolearn/nltl-values/go"
 //
 //	hex, err := values.Color("primary") // "#DFA4E3"
 //	face, err := values.Shape("face")
@@ -17,7 +17,7 @@ import (
 	"strings"
 	"sync"
 
-	nltlvalues "github.com/nltl/nltl-values"
+	nltlvalues "github.com/nothinglefttolearn/nltl-values"
 )
 
 // Point is one XY coordinate of a shape, in screen orientation: the origin

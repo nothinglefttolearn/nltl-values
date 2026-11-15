@@ -5,7 +5,7 @@ import (
 	"slices"
 	"testing"
 
-	values "github.com/nltl/nltl-values/go"
+	values "github.com/nothinglefttolearn/nltl-values/go"
 )
 
 func TestColor(t *testing.T) {

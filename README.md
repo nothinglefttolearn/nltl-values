@@ -52,11 +52,11 @@ Pin to a release tag. Never depend on `main`.
 **Go**
 
 ```sh
-go get github.com/nltl/nltl-values@v0.1.0
+go get github.com/nothinglefttolearn/nltl-values@v0.1.0
 ```
 
 ```go
-import values "github.com/nltl/nltl-values/go"
+import values "github.com/nothinglefttolearn/nltl-values/go"
 
 hex, err := values.Color("primary")   // "#DFA4E3"
 face, err := values.Shape("face")           // face.Points[0].X, .Y
@@ -64,12 +64,12 @@ all, err := values.Colors()                 // map[path]hex
 names, err := values.ShapeNames()
 ```
 
-The raw files are also available as an `embed.FS` at `nltlvalues.FS` (import `github.com/nltl/nltl-values`).
+The raw files are also available as an `embed.FS` at `nltlvalues.FS` (import `github.com/nothinglefttolearn/nltl-values`).
 
 **Python** (3.9+, no runtime dependencies)
 
 ```sh
-pip install "nltl-values @ git+https://github.com/nltl/nltl-values@v0.1.0"
+pip install "nltl-values @ git+https://github.com/nothinglefttolearn/nltl-values@v0.1.0"
 ```
 
 ```python
