@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "nltl-values"
 dynamic = ["version"]
-description = "Shared nltl static values: color tokens and named shapes."
+description = "Shared nltl static values: color and font tokens and named shapes."
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []

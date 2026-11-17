@@ -1,0 +1,12 @@
+{
+  "sans": {
+    "$value": ["Helvetica Neue", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
+    "$type": "fontFamily",
+    "$description": "Body text."
+  },
+  "mono": {
+    "$value": ["ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", "monospace"],
+    "$type": "fontFamily",
+    "$description": "Labels, buttons, metadata and the wordmark."
+  }
+}
