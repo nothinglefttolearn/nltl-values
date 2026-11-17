@@ -3,6 +3,7 @@
 //	import values "github.com/nothinglefttolearn/nltl-values/go"
 //
 //	hex, err := values.Color("primary") // "#DFA4E3"
+//	stack, err := values.Font("sans")   // ["Helvetica Neue", ..., "sans-serif"]
 //	face, err := values.Shape("face")
 //
 // Every accessor returns a fresh copy, so callers may modify results freely.
@@ -55,21 +56,44 @@ func (s ShapeDef) clone() ShapeDef {
 
 type data struct {
 	colors map[string]string   // dotted token path -> hex
+	fonts  map[string][]string // dotted token path -> font stack
 	shapes map[string]ShapeDef // name -> shape
 }
 
 var load = sync.OnceValues(func() (*data, error) {
-	d := &data{colors: map[string]string{}, shapes: map[string]ShapeDef{}}
+	d := &data{colors: map[string]string{}, fonts: map[string][]string{}, shapes: map[string]ShapeDef{}}
 
-	raw, err := fs.ReadFile(nltlvalues.FS, "tokens/colors.tokens.json")
+	colorTokens, err := readTokens("tokens/colors.tokens.json", "color")
 	if err != nil {
 		return nil, err
 	}
-	var tree map[string]any
-	if err := json.Unmarshal(raw, &tree); err != nil {
+	for p, v := range colorTokens {
+		hex, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("tokens/colors.tokens.json: %s: value is not a string", p)
+		}
+		d.colors[p] = hex
+	}
+	if err := resolveAliases(d.colors); err != nil {
 		return nil, fmt.Errorf("tokens/colors.tokens.json: %w", err)
 	}
-	flattenColors(tree, "", d.colors)
+
+	fontTokens, err := readTokens("tokens/fonts.tokens.json", "fontFamily")
+	if err != nil {
+		return nil, err
+	}
+	for p, v := range fontTokens {
+		list, _ := v.([]any)
+		stack := make([]string, 0, len(list))
+		for _, f := range list {
+			name, ok := f.(string)
+			if !ok {
+				return nil, fmt.Errorf("tokens/fonts.tokens.json: %s: family name is not a string", p)
+			}
+			stack = append(stack, name)
+		}
+		d.fonts[p] = stack
+	}
 
 	files, err := fs.Glob(nltlvalues.FS, "shapes/*.json")
 	if err != nil {
@@ -89,9 +113,26 @@ var load = sync.OnceValues(func() (*data, error) {
 	return d, nil
 })
 
-// flattenColors walks a DTCG group, recording every color token under its
-// dotted path. Keys starting with "$" are metadata, not children.
-func flattenColors(group map[string]any, prefix string, out map[string]string) {
+// readTokens decodes a DTCG token file and returns the $value of every token
+// of the given $type, keyed by dotted path.
+func readTokens(name, tokenType string) (map[string]any, error) {
+	raw, err := fs.ReadFile(nltlvalues.FS, name)
+	if err != nil {
+		return nil, err
+	}
+	var tree map[string]any
+	if err := json.Unmarshal(raw, &tree); err != nil {
+		return nil, fmt.Errorf("%s: %w", name, err)
+	}
+	out := map[string]any{}
+	flatten(tree, "", tokenType, out)
+	return out, nil
+}
+
+// flatten walks a DTCG group, recording the value of every token of the
+// given type under its dotted path. Keys starting with "$" are metadata, not
+// children.
+func flatten(group map[string]any, prefix, tokenType string, out map[string]any) {
 	for k, v := range group {
 		if strings.HasPrefix(k, "$") {
 			continue
@@ -105,17 +146,41 @@ func flattenColors(group map[string]any, prefix string, out map[string]string) {
 			p = prefix + "." + k
 		}
 		if val, isToken := node["$value"]; isToken {
-			if hex, ok := val.(string); ok && node["$type"] == "color" {
-				out[p] = hex
+			if node["$type"] == tokenType {
+				out[p] = val
 			}
 			continue
 		}
-		flattenColors(node, p, out)
+		flatten(node, p, tokenType, out)
 	}
 }
 
+// resolveAliases replaces, in place, each alias such as "{secondary}" with
+// the hex value of the token it points at.
+func resolveAliases(colors map[string]string) error {
+	resolved := make(map[string]string, len(colors))
+	for p, v := range colors {
+		seen := map[string]bool{p: true}
+		for strings.HasPrefix(v, "{") {
+			target := strings.TrimSuffix(strings.TrimPrefix(v, "{"), "}")
+			next, ok := colors[target]
+			if !ok || seen[target] {
+				return fmt.Errorf("bad color alias %s at %q", v, p)
+			}
+			seen[target] = true
+			v = next
+		}
+		resolved[p] = v
+	}
+	for p, v := range resolved {
+		colors[p] = v
+	}
+	return nil
+}
+
 // Color returns the hex value of the color token at a dotted path such as
-// "primary".
+// "primary". Aliases are resolved, so Color("accent") gives the hex of
+// "secondary".
 func Color(path string) (string, error) {
 	d, err := load()
 	if err != nil {
@@ -137,6 +202,33 @@ func Colors() (map[string]string, error) {
 	out := make(map[string]string, len(d.colors))
 	for k, v := range d.colors {
 		out[k] = v
+	}
+	return out, nil
+}
+
+// Font returns the font stack of the font token at a dotted path such as
+// "sans": family names, most preferred first, ending with a generic family.
+func Font(path string) ([]string, error) {
+	d, err := load()
+	if err != nil {
+		return nil, err
+	}
+	stack, ok := d.fonts[path]
+	if !ok {
+		return nil, fmt.Errorf("nltl-values: unknown font %q", path)
+	}
+	return append([]string(nil), stack...), nil
+}
+
+// Fonts returns every font token, keyed by dotted path.
+func Fonts() (map[string][]string, error) {
+	d, err := load()
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[string][]string, len(d.fonts))
+	for k, v := range d.fonts {
+		out[k] = append([]string(nil), v...)
 	}
 	return out, nil
 }

@@ -2,6 +2,7 @@ package values_test
 
 import (
 	"math"
+	"regexp"
 	"slices"
 	"testing"
 
@@ -19,11 +20,41 @@ func TestColor(t *testing.T) {
 	if got, _ := values.Color("secondary"); got != "#879B87" {
 		t.Errorf("secondary = %q, want #879B87", got)
 	}
-	if all, _ := values.Colors(); len(all) != 2 {
-		t.Errorf("Colors() = %v, want 2 tokens", all)
+	if got, _ := values.Color("bg"); got != "#141414" {
+		t.Errorf("bg = %q, want #141414", got)
+	}
+	if got, _ := values.Color("accent"); got != "#879B87" {
+		t.Errorf("accent = %q, want secondary's #879B87", got)
+	}
+	all, _ := values.Colors()
+	hex := regexp.MustCompile(`^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)
+	for p, v := range all {
+		if !hex.MatchString(v) {
+			t.Errorf("Colors()[%q] = %q, want a hex color", p, v)
+		}
 	}
 	if _, err := values.Color("nope"); err == nil {
 		t.Error("expected error for unknown color")
+	}
+}
+
+func TestFont(t *testing.T) {
+	sans, err := values.Font("sans")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sans[0] != "Helvetica Neue" || sans[len(sans)-1] != "sans-serif" {
+		t.Errorf("sans = %v", sans)
+	}
+	sans[0] = "changed"
+	if again, _ := values.Font("sans"); again[0] != "Helvetica Neue" {
+		t.Error("Font returned shared backing data")
+	}
+	if all, _ := values.Fonts(); len(all) != 2 {
+		t.Errorf("Fonts() = %v, want sans and mono", all)
+	}
+	if _, err := values.Font("nope"); err == nil {
+		t.Error("expected error for unknown font")
 	}
 }
 

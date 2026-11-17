@@ -10,6 +10,7 @@ jsonschema installed. Exits non-zero and lists every problem found.
 
 Checks beyond the schemas:
   - files are strict JSON (no duplicate keys, no NaN/Infinity)
+  - every color alias points at an existing color token, with no cycles
   - shape names are unique and match their file name
   - nothing unexpected sits in tokens/ or shapes/
 """
@@ -25,7 +26,10 @@ except ImportError:
     sys.exit("jsonschema is not installed: run `uv run scripts/validate` or `pip install jsonschema`")
 
 ROOT = Path(__file__).resolve().parent.parent
-TOKEN_FILES = {"colors.tokens.json": "colors.schema.json"}
+TOKEN_FILES = {
+    "colors.tokens.json": "colors.schema.json",
+    "fonts.tokens.json": "fonts.schema.json",
+}
 
 
 def _no_dupes(pairs):
@@ -68,6 +72,35 @@ def check_file(path: Path, v: Draft202012Validator, errors: list[str]):
     return data
 
 
+def token_values(group, prefix: str = "") -> dict:
+    """Every token's $value in a DTCG group tree, keyed by dotted path."""
+    out = {}
+    for key, node in group.items():
+        if key.startswith("$") or not isinstance(node, dict):
+            continue
+        path = f"{prefix}.{key}" if prefix else key
+        if "$value" in node:
+            out[path] = node["$value"]
+        else:
+            out.update(token_values(node, path))
+    return out
+
+
+def check_aliases(values: dict, rel: str, errors: list[str]) -> None:
+    for path, value in values.items():
+        seen = [path]
+        while isinstance(value, str) and value.startswith("{"):
+            target = value[1:-1]
+            if target not in values:
+                errors.append(f"{rel}: {path}: alias {value} points at no token")
+                break
+            if target in seen:
+                errors.append(f"{rel}: {path}: alias cycle {' -> '.join(seen + [target])}")
+                break
+            seen.append(target)
+            value = values[target]
+
+
 def main() -> int:
     errors: list[str] = []
 
@@ -76,7 +109,9 @@ def main() -> int:
         if schema_name is None:
             errors.append(f"tokens/{path.name}: no schema registered (add it to TOKEN_FILES)")
             continue
-        check_file(path, validator(schema_name), errors)
+        data = check_file(path, validator(schema_name), errors)
+        if path.name == "colors.tokens.json" and isinstance(data, dict):
+            check_aliases(token_values(data), f"tokens/{path.name}", errors)
     for name in TOKEN_FILES:
         if not (ROOT / "tokens" / name).is_file():
             errors.append(f"tokens/{name}: missing")

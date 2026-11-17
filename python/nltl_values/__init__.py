@@ -3,6 +3,7 @@
     import nltl_values
 
     nltl_values.color("primary")   # "#DFA4E3"
+    nltl_values.font("sans")       # ("Helvetica Neue", ..., "sans-serif")
     nltl_values.shape("face").points     # ((0.0, 0.0), (0.75, 0.25), ...)
 """
 from __future__ import annotations
@@ -12,10 +13,10 @@ from dataclasses import dataclass
 from functools import lru_cache
 from importlib import resources
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 __version__ = "0.1.0"
-__all__ = ["Shape", "color", "colors", "shape", "shape_names"]
+__all__ = ["Shape", "color", "colors", "font", "fonts", "shape", "shape_names"]
 
 # (x, y) in screen orientation: origin top-left, y increases downward.
 Point = Tuple[float, float]
@@ -39,24 +40,49 @@ def _data_dir():
     return Path(__file__).resolve().parents[2]
 
 
-def _flatten(group: dict, prefix: str, out: Dict[str, str]) -> None:
+def _flatten(group: dict, prefix: str, token_type: str, out: Dict[str, Any]) -> None:
+    """Record every token of ``token_type`` in a DTCG group under its dotted path."""
     for key, node in group.items():
         if key.startswith("$") or not isinstance(node, dict):
             continue
         path = f"{prefix}.{key}" if prefix else key
         if "$value" in node:
-            if node.get("$type") == "color":
+            if node.get("$type") == token_type:
                 out[path] = node["$value"]
         else:
-            _flatten(node, path, out)
+            _flatten(node, path, token_type, out)
+
+
+def _tokens(file_name: str, token_type: str) -> Dict[str, Any]:
+    tree = json.loads((_data_dir() / "tokens" / file_name).read_text("utf-8"))
+    out: Dict[str, Any] = {}
+    _flatten(tree, "", token_type, out)
+    return out
+
+
+def _resolve(values: Dict[str, str]) -> Dict[str, str]:
+    """Replace each alias such as ``"{secondary}"`` with the hex it points at."""
+    out: Dict[str, str] = {}
+    for path, value in values.items():
+        seen = [path]
+        while value.startswith("{"):
+            target = value[1:-1]
+            if target not in values or target in seen:
+                raise ValueError(f"nltl-values: bad color alias {value} at {path!r}")
+            seen.append(target)
+            value = values[target]
+        out[path] = value
+    return out
 
 
 @lru_cache(maxsize=None)
 def _colors() -> Dict[str, str]:
-    tree = json.loads((_data_dir() / "tokens" / "colors.tokens.json").read_text("utf-8"))
-    out: Dict[str, str] = {}
-    _flatten(tree, "", out)
-    return out
+    return _resolve(_tokens("colors.tokens.json", "color"))
+
+
+@lru_cache(maxsize=None)
+def _fonts() -> Dict[str, Tuple[str, ...]]:
+    return {k: tuple(v) for k, v in _tokens("fonts.tokens.json", "fontFamily").items()}
 
 
 @lru_cache(maxsize=None)
@@ -76,7 +102,8 @@ def _shapes() -> Dict[str, Shape]:
 
 
 def color(path: str) -> str:
-    """Hex value of the color token at a dotted path, e.g. ``"primary"``."""
+    """Hex value of the color token at a dotted path, e.g. ``"primary"``.
+    Aliases are resolved, so ``color("accent")`` gives the hex of ``secondary``."""
     try:
         return _colors()[path]
     except KeyError:
@@ -86,6 +113,20 @@ def color(path: str) -> str:
 def colors() -> Dict[str, str]:
     """Every color token, keyed by dotted path."""
     return dict(_colors())
+
+
+def font(path: str) -> Tuple[str, ...]:
+    """Font stack of the font token at a dotted path, e.g. ``"sans"``: family
+    names, most preferred first, ending with a generic family."""
+    try:
+        return _fonts()[path]
+    except KeyError:
+        raise KeyError(f"nltl-values: unknown font {path!r}") from None
+
+
+def fonts() -> Dict[str, Tuple[str, ...]]:
+    """Every font token, keyed by dotted path."""
+    return dict(_fonts())
 
 
 def shape(name: str) -> Shape:

@@ -6,5 +6,90 @@
   "secondary": {
     "$value": "#879B87",
     "$type": "color"
+  },
+  "bg": {
+    "$value": "#141414",
+    "$type": "color",
+    "$description": "Page background."
+  },
+  "bg-raised": {
+    "$value": "#1C1C1C",
+    "$type": "color",
+    "$description": "Surfaces one step above bg: inputs, hovered rows, panels."
+  },
+  "bg-raised-2": {
+    "$value": "#232323",
+    "$type": "color",
+    "$description": "Surfaces one step above bg-raised, e.g. keycaps inside a panel."
+  },
+  "fg": {
+    "$value": "#EEEEEC",
+    "$type": "color",
+    "$description": "Main text."
+  },
+  "muted": {
+    "$value": "#888888",
+    "$type": "color",
+    "$description": "Secondary text: labels, metadata, hints."
+  },
+  "border": {
+    "$value": "#333333",
+    "$type": "color",
+    "$description": "Default border, e.g. header and footer rules."
+  },
+  "border-strong": {
+    "$value": "#444444",
+    "$type": "color",
+    "$description": "Borders of inputs, panels and section dividers."
+  },
+  "border-row": {
+    "$value": "#2A2A2A",
+    "$type": "color",
+    "$description": "Faint dividers between list rows."
+  },
+  "border-dashed": {
+    "$value": "#555555",
+    "$type": "color",
+    "$description": "Dashed borders, e.g. a drop zone."
+  },
+  "accent": {
+    "$value": "{secondary}",
+    "$type": "color",
+    "$description": "Interactive accent: links, buttons, focus, progress."
+  },
+  "accent-hover": {
+    "$value": "#9BAD9B",
+    "$type": "color"
+  },
+  "accent-fg": {
+    "$value": "#FFFFFF",
+    "$type": "color",
+    "$description": "Text on an accent background."
+  },
+  "accent-glow": {
+    "$value": "#879B8759",
+    "$type": "color",
+    "$description": "Accent at 35% opacity, for focus and hover rings."
+  },
+  "danger": {
+    "$value": "#EF4444",
+    "$type": "color"
+  },
+  "danger-hover": {
+    "$value": "#F76464",
+    "$type": "color"
+  },
+  "danger-glow": {
+    "$value": "#EF44444D",
+    "$type": "color",
+    "$description": "Danger at 30% opacity, for hover rings."
+  },
+  "success": {
+    "$value": "#22C55E",
+    "$type": "color"
+  },
+  "warning": {
+    "$value": "#EAB308",
+    "$type": "color"
   }
 }

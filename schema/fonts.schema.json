@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "nltl font tokens",
+  "description": "Subset of the W3C Design Tokens (DTCG) format: nested groups of fontFamily tokens. A token's $value is a font stack: family names in order of preference, ending with a generic family such as sans-serif. Group and token names must not start with '$' or contain '.', '{' or '}'.",
+  "$ref": "#/$defs/group",
+  "$defs": {
+    "name": { "type": "string", "pattern": "^[^$.{}][^.{}]*$" },
+    "group": {
+      "type": "object",
+      "properties": {
+        "$description": { "type": "string" }
+      },
+      "propertyNames": {
+        "anyOf": [
+          { "$ref": "#/$defs/name" },
+          { "const": "$description" }
+        ]
+      },
+      "additionalProperties": { "$ref": "#/$defs/node" },
+      "minProperties": 1
+    },
+    "node": {
+      "if": { "type": "object", "required": ["$value"] },
+      "then": { "$ref": "#/$defs/fontToken" },
+      "else": { "$ref": "#/$defs/group" }
+    },
+    "fontToken": {
+      "type": "object",
+      "required": ["$value", "$type"],
+      "properties": {
+        "$value": {
+          "type": "array",
+          "description": "Font family names, most preferred first.",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "$type": { "const": "fontFamily" },
+        "$description": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
