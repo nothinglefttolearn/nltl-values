@@ -43,15 +43,17 @@ def area(points):
 
 class ShapeTest(unittest.TestCase):
     def test_shapes(self):
-        self.assertEqual(nltl_values.shape_names(), ["face", "space"])
+        self.assertEqual(nltl_values.shape_names(), ["face", "face2", "face3", "space", "space2", "space3"])
         face = nltl_values.shape("face")
         self.assertTrue(face.closed)
         self.assertTrue(face.description)
         self.assertEqual(face.points, ((0.0, 0.0), (0.75, 0.25), (0.75, 1.0), (0.0, 1.0)))
 
     def test_face_and_space_fill_unit_square(self):
-        total = area(nltl_values.shape("face").points) + area(nltl_values.shape("space").points)
-        self.assertAlmostEqual(total, 1.0)
+        for suffix in ("", "2", "3"):
+            with self.subTest(pair=suffix):
+                total = area(nltl_values.shape("face" + suffix).points) + area(nltl_values.shape("space" + suffix).points)
+                self.assertAlmostEqual(total, 1.0)
 
     def test_unknown_shape(self):
         with self.assertRaises(KeyError):

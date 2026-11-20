@@ -1,0 +1,6 @@
+{
+  "$schema": "../schema/shape.schema.json",
+  "name": "face3",
+  "description": "NLTL face, variant 3. Scalene triangle: the square's top edge, with both top corners drawn down to face's inner point.",
+  "points": [[0, 0], [1, 0], [0.75, 0.25]]
+}
