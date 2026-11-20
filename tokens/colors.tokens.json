@@ -107,6 +107,21 @@
     "secondary": {
       "$value": "{brand.secondary}",
       "$type": "color"
+    },
+    "bg-dark": {
+      "$value": "#141414",
+      "$type": "color",
+      "$description": "Dark background."
+    },
+    "bg-light": {
+      "$value": "#807575",
+      "$type": "color",
+      "$description": "Light background: rgb(128, 117, 117)."
+    },
+    "canvas": {
+      "$value": "#F3EEE3",
+      "$type": "color",
+      "$description": "Warm off-white for a printed or canvas look."
     }
   }
 }
