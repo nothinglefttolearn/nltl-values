@@ -2,7 +2,7 @@
 //
 //	import values "github.com/nothinglefttolearn/nltl-values/go"
 //
-//	hex, err := values.Color("primary") // "#DFA4E3"
+//	hex, err := values.Color("brand.primary") // "#DFA4E3"
 //	stack, err := values.Font("sans")   // ["Helvetica Neue", ..., "sans-serif"]
 //	face, err := values.Shape("face")
 //
@@ -155,7 +155,7 @@ func flatten(group map[string]any, prefix, tokenType string, out map[string]any)
 	}
 }
 
-// resolveAliases replaces, in place, each alias such as "{secondary}" with
+// resolveAliases replaces, in place, each alias such as "{brand.secondary}" with
 // the hex value of the token it points at.
 func resolveAliases(colors map[string]string) error {
 	resolved := make(map[string]string, len(colors))
@@ -179,8 +179,8 @@ func resolveAliases(colors map[string]string) error {
 }
 
 // Color returns the hex value of the color token at a dotted path such as
-// "primary". Aliases are resolved, so Color("accent") gives the hex of
-// "secondary".
+// "brand.primary". Aliases are resolved, so Color("web.accent") gives the hex of
+// "brand.secondary".
 func Color(path string) (string, error) {
 	d, err := load()
 	if err != nil {

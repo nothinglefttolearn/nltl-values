@@ -5,18 +5,20 @@ import nltl_values
 
 class ColorTest(unittest.TestCase):
     def test_colors(self):
-        self.assertEqual(nltl_values.color("primary"), "#DFA4E3")
-        self.assertEqual(nltl_values.color("secondary"), "#879B87")
-        self.assertEqual(nltl_values.color("bg"), "#141414")
-        self.assertEqual(nltl_values.color("accent-glow"), "#879B8759")
-        self.assertIn("border-strong", nltl_values.colors())
+        self.assertEqual(nltl_values.color("brand.primary"), "#DFA4E3")
+        self.assertEqual(nltl_values.color("brand.secondary"), "#879B87")
+        self.assertEqual(nltl_values.color("web.bg"), "#141414")
+        self.assertEqual(nltl_values.color("web.accent-glow"), "#879B8759")
+        self.assertIn("web.border-strong", nltl_values.colors())
 
     def test_every_color_is_hex(self):
         for path, hex_ in nltl_values.colors().items():
             self.assertRegex(hex_, r"^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", path)
 
     def test_alias_resolves_to_target(self):
-        self.assertEqual(nltl_values.color("accent"), nltl_values.color("secondary"))
+        self.assertEqual(nltl_values.color("web.accent"), nltl_values.color("brand.secondary"))
+        self.assertEqual(nltl_values.color("art.primary"), nltl_values.color("brand.primary"))
+        self.assertEqual(nltl_values.color("art.secondary"), nltl_values.color("brand.secondary"))
 
     def test_unknown_color(self):
         with self.assertRaises(KeyError):

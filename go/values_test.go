@@ -10,21 +10,27 @@ import (
 )
 
 func TestColor(t *testing.T) {
-	got, err := values.Color("primary")
+	got, err := values.Color("brand.primary")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got != "#DFA4E3" {
-		t.Errorf("primary = %q, want #DFA4E3", got)
+		t.Errorf("brand.primary = %q, want #DFA4E3", got)
 	}
-	if got, _ := values.Color("secondary"); got != "#879B87" {
-		t.Errorf("secondary = %q, want #879B87", got)
+	if got, _ := values.Color("brand.secondary"); got != "#879B87" {
+		t.Errorf("brand.secondary = %q, want #879B87", got)
 	}
-	if got, _ := values.Color("bg"); got != "#141414" {
+	if got, _ := values.Color("web.bg"); got != "#141414" {
 		t.Errorf("bg = %q, want #141414", got)
 	}
-	if got, _ := values.Color("accent"); got != "#879B87" {
-		t.Errorf("accent = %q, want secondary's #879B87", got)
+	if got, _ := values.Color("web.accent"); got != "#879B87" {
+		t.Errorf("web.accent = %q, want brand.secondary's #879B87", got)
+	}
+	if got, _ := values.Color("art.primary"); got != "#DFA4E3" {
+		t.Errorf("art.primary = %q, want brand.primary's #DFA4E3", got)
+	}
+	if got, _ := values.Color("art.secondary"); got != "#879B87" {
+		t.Errorf("art.secondary = %q, want brand.secondary's #879B87", got)
 	}
 	all, _ := values.Colors()
 	hex := regexp.MustCompile(`^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)

@@ -2,7 +2,7 @@
 
     import nltl_values
 
-    nltl_values.color("primary")   # "#DFA4E3"
+    nltl_values.color("brand.primary")   # "#DFA4E3"
     nltl_values.font("sans")       # ("Helvetica Neue", ..., "sans-serif")
     nltl_values.shape("face").points     # ((0.0, 0.0), (0.75, 0.25), ...)
 """
@@ -61,7 +61,7 @@ def _tokens(file_name: str, token_type: str) -> Dict[str, Any]:
 
 
 def _resolve(values: Dict[str, str]) -> Dict[str, str]:
-    """Replace each alias such as ``"{secondary}"`` with the hex it points at."""
+    """Replace each alias such as ``"{brand.secondary}"`` with the hex it points at."""
     out: Dict[str, str] = {}
     for path, value in values.items():
         seen = [path]
@@ -102,8 +102,8 @@ def _shapes() -> Dict[str, Shape]:
 
 
 def color(path: str) -> str:
-    """Hex value of the color token at a dotted path, e.g. ``"primary"``.
-    Aliases are resolved, so ``color("accent")`` gives the hex of ``secondary``."""
+    """Hex value of the color token at a dotted path, e.g. ``"brand.primary"``.
+    Aliases are resolved, so ``color("web.accent")`` gives the hex of ``brand.secondary``."""
     try:
         return _colors()[path]
     except KeyError:
