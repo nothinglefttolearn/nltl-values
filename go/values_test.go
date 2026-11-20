@@ -63,8 +63,8 @@ func TestShapes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(names, []string{"face", "space"}) {
-		t.Errorf("ShapeNames() = %v, want [face space]", names)
+	if !slices.Equal(names, []string{"face", "face2", "face3", "space", "space2", "space3"}) {
+		t.Errorf("ShapeNames() = %v, want [face face2 face3 space space2 space3]", names)
 	}
 
 	face, err := values.Shape("face")
@@ -88,12 +88,20 @@ func TestShapes(t *testing.T) {
 	}
 }
 
-// face and space tile the unit square: their areas sum to 1.
+// Each face/space pair tiles the unit square: their areas sum to 1.
 func TestFaceAndSpaceFillUnitSquare(t *testing.T) {
-	face, _ := values.Shape("face")
-	space, _ := values.Shape("space")
-	if got := area(face.Points) + area(space.Points); math.Abs(got-1) > 1e-9 {
-		t.Errorf("area(face)+area(space) = %v, want 1", got)
+	for _, suffix := range []string{"", "2", "3"} {
+		face, err := values.Shape("face" + suffix)
+		if err != nil {
+			t.Fatal(err)
+		}
+		space, err := values.Shape("space" + suffix)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := area(face.Points) + area(space.Points); math.Abs(got-1) > 1e-9 {
+			t.Errorf("area(face%[1]s)+area(space%[1]s) = %[2]v, want 1", suffix, got)
+		}
 	}
 }
 
