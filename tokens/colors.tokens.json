@@ -99,6 +99,14 @@
     }
   },
   "art": {
-    "$description": "Palette for image generation and animation. Not included in the CSS file."
+    "$description": "Palette for image generation and animation. Not included in the CSS file.",
+    "primary": {
+      "$value": "{brand.primary}",
+      "$type": "color"
+    },
+    "secondary": {
+      "$value": "{brand.secondary}",
+      "$type": "color"
+    }
   }
 }

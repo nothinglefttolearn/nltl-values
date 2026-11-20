@@ -17,6 +17,8 @@ class ColorTest(unittest.TestCase):
 
     def test_alias_resolves_to_target(self):
         self.assertEqual(nltl_values.color("web.accent"), nltl_values.color("brand.secondary"))
+        self.assertEqual(nltl_values.color("art.primary"), nltl_values.color("brand.primary"))
+        self.assertEqual(nltl_values.color("art.secondary"), nltl_values.color("brand.secondary"))
 
     def test_unknown_color(self):
         with self.assertRaises(KeyError):

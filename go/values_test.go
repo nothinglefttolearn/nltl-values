@@ -26,6 +26,12 @@ func TestColor(t *testing.T) {
 	if got, _ := values.Color("web.accent"); got != "#879B87" {
 		t.Errorf("web.accent = %q, want brand.secondary's #879B87", got)
 	}
+	if got, _ := values.Color("art.primary"); got != "#DFA4E3" {
+		t.Errorf("art.primary = %q, want brand.primary's #DFA4E3", got)
+	}
+	if got, _ := values.Color("art.secondary"); got != "#879B87" {
+		t.Errorf("art.secondary = %q, want brand.secondary's #879B87", got)
+	}
 	all, _ := values.Colors()
 	hex := regexp.MustCompile(`^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`)
 	for p, v := range all {

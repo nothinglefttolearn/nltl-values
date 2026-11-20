@@ -38,7 +38,7 @@ Colors are split into three top-level groups:
 
 - **`brand`:** `brand.primary`, `brand.secondary`. Shared by websites and artwork; alias them from the other groups rather than copying the hex.
 - **`web`** (website interface): `web.bg`, `web.bg-raised`, `web.bg-raised-2`, `web.fg`, `web.muted`, `web.border`, `web.border-strong`, `web.border-row`, `web.border-dashed`, `web.accent` (an alias of `brand.secondary`), `web.accent-hover`, `web.accent-fg`, `web.accent-glow`, `web.danger`, `web.danger-hover`, `web.danger-glow`, `web.success`, `web.warning`.
-- **`art`:** the palette for image generation and animation projects. Empty for now.
+- **`art`:** the palette for image generation and animation projects: `art.primary` and `art.secondary` (aliases of `brand.primary` and `brand.secondary`).
 
 In CSS, `brand` and `web` colors drop their group prefix, so `web.bg-raised` is `--bg-raised` and `brand.primary` is `--primary`. `art` colors are not in the CSS file. A name may therefore not appear in both `brand` and `web`; `scripts/build-css` fails if it does.
 
